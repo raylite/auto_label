@@ -1,0 +1,95 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}
+	{% if title %}{{ title }} - Label{% else %}Auto label app{% endif %}
+{% endblock %}
+
+{% block navbar %}
+	<nav class="navbar navbar-default">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" id = "banner" href="{{ url_for('index') }}"><strong>Intervention comparision lablling app</strong></a>
+			</div>
+			
+		</div>
+		
+	</nav>
+{% endblock %}
+
+{% block content %}
+	<div class="container-fluid">
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			{% for message in messages %}
+			<div class="alert alert-info" role="alert">{{ message }}</div>
+			{% endfor %}
+		{% endif %}
+		{% endwith %}
+
+		{% block app_content %}{% endblock %}
+	</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+	
+    $(".abstract").click(function (e) {
+    	e.preventDefault();
+    	var copyText = $(this).text();
+    	document.addEventListener('copy', function(e) {
+      		e.clipboardData.setData('text/plain', copyText);
+      		e.preventDefault();
+   		}, true);
+
+    	document.execCommand("copy");
+    	if (!$(this).closest('tr').find('.sentence').val()){
+    		$(this).closest('tr').find('.sentence').val(copyText);
+    	}
+    	else {
+    		$(this).closest('tr').find('.sentence').val($(this).closest('tr').find('.sentence').val() + '***' + copyText);
+    	}
+    });
+
+    $(".sentence").select(function () {
+    	var selectedText = '';
+    	if (window.getSelection){
+    			selectedText = window.getSelection().toString();
+    	}
+    	else if (document.selection && document.selection.type == "Text"){
+    			selectedText = document.selection().toString();
+    	}
+
+    	if (!$.trim($(this).closest('tr').find('.clause').val())){
+    		
+    		$(this).closest('tr').find('.clause').val(selectedText);
+    	}
+    	else{
+    		$(this).closest('tr').find('.clause').val($(this).closest('tr').find('.clause').val() + '***' + selectedText);
+    	}
+    	//$(this).closest('tr').find('.clause').text(window.getSelection().toString());
+
+    	window.getSelection().removeAllRanges();
+    	
+    });
+
+    $('.sentence').dblclick(function(){
+    	$(this).val('');
+    	$(this).closest('tr').find('.clause').val('');
+
+    });
+
+</script>
+
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'style.css') }}">
+{% endblock %}
+

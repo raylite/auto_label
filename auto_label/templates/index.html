@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="d-flex justify-content-center align-items-center">
+    	<h3>
+    		List of RCTs for intervention comparison sentence extraction
+    	</h3>
+    	
+    	<p><strong>Important Note: </strong> Below is a list of 50 RCT studies presented for identification and extraction of sentences that indicates interventions are being compared in each article. The guidelines are as follows:</p>
+    	<ol>
+    		<li>Scan each abstract to identify any sentence of interest. Then, click on the sentence(s)</li>
+    		<li>The sentence(s) automatically appears to the right of the abstract. If there occurs a <strong>mistake</strong>, double click the corresponding sentence column to the righ of the abstract to change your choice.</li>
+    		<li>In the extracted sentence, highlight any clause or phrase(s) that actually signal the comparison.</li>
+    		<li>Uncheck the RCT column box for any study you presume not to be a RCT.</li>
+    		<li>Click on the 'click to submit' button at the buttom of the page when you finish to submit your response.</li>
+    	</ol>
+    	<form action="{{ url_for('process') }}" method="post">
+    		{{ pub_form.hidden_tag() }}
+    		<div>
+    			<table class="dataframe table table-striped table-responsive table-hover">
+    				<tr>
+    					<th>Number</th>
+    					<th>Abstract</th>
+    					<th>Sentence</th>
+    					<th>Clause/Phrase</th>
+    					<th>Non-RCT</th>
+    				</tr>
+    				{% for article, abst in pub %}
+    					<tr>
+    						<td>{{ article.number(size=7)}}</td>
+    						<td>{% for a in abst.Abstract %} <a class='abstract' href="">{{ a }}</a>{% endfor %}</td>
+    						<td>{{ article.sentence(cols=40, rows=8, class='sentence') }}</td>
+    						<td>{{ article.clause(cols=30, rows=8, class='clause') }}</td>
+    						<td>{{ article.rct }}</td>
+    					</tr>
+    				{% endfor %}
+    			</table>
+    		</div>
+    		
+    		
+    		<input type="submit" value="Click when done"/>
+    	</form>
+	</div>
+
+{% endblock %}
+
+
