@@ -14,7 +14,7 @@ class Abstract(db.Model):
     pmid = db.Column(db.Integer, index=True, unique=True)
     abstract = db.Column(LONGTEXT())
     count = db.Column(db.Integer)
-    non_rct = db.Column(db.Boolean, default = False)
+    non_rct = db.Column(db.Boolean)
     nsentences = db.relationship('Nsentence', backref = 'source', lazy= 'dynamic')
     
     def __init__(self, pmid=None, abstract=None, count=None):
@@ -28,7 +28,7 @@ class Abstract(db.Model):
 class Psentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean, default = True)
+    label = db.Column(db.Boolean)
     abstract_id = db.Column(db.Integer, db.ForeignKey('abstract.id'))
     abstract = db.relationship('Abstract', backref='source')
     
@@ -38,7 +38,7 @@ class Psentence(db.Model):
 class Pclause(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     clause = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean, default = True)
+    label = db.Column(db.Boolean)
     sentence_id = db.Column(db.Integer, db.ForeignKey('psentence.id'))
     #sentence = db.relationship('Psentence', backref='source')
     
@@ -48,7 +48,7 @@ class Pclause(db.Model):
 class Nsentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean, default = False)
+    label = db.Column(db.Boolean)
     abstract_id = db.Column(db.Integer, db.ForeignKey('abstract.id'))
     
     def __repr__(self):

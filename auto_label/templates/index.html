@@ -45,4 +45,60 @@
 
 {% endblock %}
 
+{% block scripts %}
+{{ super() }}
+<script>
+	
+    $(".abstract").click(function (e) {
+    	e.preventDefault();
+    	var copyText = $(this).text();
+    	document.addEventListener('copy', function(e) {
+      		e.clipboardData.setData('text/plain', copyText);
+      		e.preventDefault();
+   		}, true);
+
+    	document.execCommand("copy");
+    	if (!$(this).closest('tr').find('.sentence').val()){
+    		$(this).closest('tr').find('.sentence').val(copyText);
+    	}
+    	else {
+    		$(this).closest('tr').find('.sentence').val($(this).closest('tr').find('.sentence').val() + '***' + copyText);
+    	}
+    });
+
+    $(".sentence").select(function () {
+    	var selectedText = '';
+    	if (window.getSelection){
+    			selectedText = window.getSelection().toString();
+    	}
+    	else if (document.selection && document.selection.type == "Text"){
+    			selectedText = document.selection().toString();
+    	}
+
+    	if (!$.trim($(this).closest('tr').find('.clause').val())){
+    		
+    		$(this).closest('tr').find('.clause').val(selectedText);
+    	}
+    	else{
+    		$(this).closest('tr').find('.clause').val($(this).closest('tr').find('.clause').val() + '***' + selectedText);
+    	}
+    	//$(this).closest('tr').find('.clause').text(window.getSelection().toString());
+
+    	window.getSelection().removeAllRanges();
+    	
+    });
+
+    $('.sentence').dblclick(function(){
+    	$(this).val('');
+    	$(this).closest('tr').find('.clause').val('');
+
+    });
+
+    $('.clause').dblclick(function(){
+    	$(this).val('');
+
+    });
+
+</script>
+{% endblock %}
 

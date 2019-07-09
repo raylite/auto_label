@@ -17,7 +17,7 @@ from auto_label.models import Psentence, Nsentence, Pclause, Abstract
 
 @app.route('/')
 def index():
-    abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(5)\
+    abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(50)\
                                 .with_entities(Abstract.pmid,
                                                Abstract.abstract).statement, con=db.session.bind)
     #abstract = pd.DataFrame(articles_list)
@@ -53,7 +53,7 @@ def process():
         clause_list = []
         
         for idx, form_data in enumerate(pub_form.articles.data):
-            if form_data['rct'] == False or form_data['rct'] == '':
+            if form_data['rct'] == True:
                 abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
                 abstr.count += 1
                 
