@@ -119,7 +119,7 @@ dmypy.json
 #Database/Data files
 *.db
 *.csv
-*.txt
+#*.txt
 
 #log files
 logs/
