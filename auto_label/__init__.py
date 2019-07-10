@@ -1,51 +1,55 @@
 from flask import Flask
-from config import Config
+from config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from flask_bootstrap import Bootstrap
 import os
 
 
-app = Flask(__name__)
-app.config.from_object(Config)
+db = SQLAlchemy()
+migrate = Migrate()
+bootstrap = Bootstrap()
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-bootstrap = Bootstrap(app)
+def create_app(config_class = Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+    if app.config["ENV"] == "production":
+        config_class = ProductionConfig
+    elif app.config["ENV"] == "testing":
+        config_class = TestingConfig
+    else:
+        config_class = DevelopmentConfig
+    
+    app.config.from_object(config_class)
+    
+    db.init_app(app)
+    migrate.init_app(app, db)
+    bootstrap.init_app(app)
+    
+    from auto_label.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
+    
+    from auto_label.main import bp as main_bp
+    app.register_blueprint(main_bp)
+    
+    
+    if not app.debug:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        file_handler = RotatingFileHandler('logs/labeller.log', maxBytes=10240,
+                                           backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+    
+        app.logger.setLevel(logging.INFO)
+    
+        app.logger.info('Labeller startup')
+    return app
 
 
 
-if not app.debug:
-    if app.config['MAIL_SERVER']:
-        auth = None
-        if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
-            auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-        secure = None
-        if app.config['MAIL_USE_TLS']:
-            secure = ()
-        mail_handler = SMTPHandler(
-            mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-            fromaddr='labeller_no-reply@' + app.config['MAIL_SERVER'],
-            toaddrs=app.config['ADMINS'], subject='Cirex Failure Notification',
-            credentials=auth, secure=secure)
-        mail_handler.setLevel(logging.ERROR)
-        app.logger.addHandler(mail_handler)
-
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/labeller.log', maxBytes=10240,
-                                       backupCount=10)
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-
-    app.logger.setLevel(logging.INFO)
-
-    app.logger.info('Labeller startup')
-
-
-
-from auto_label import models, views, errors
+from auto_label import models

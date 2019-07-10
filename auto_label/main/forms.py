@@ -20,5 +20,8 @@ class ArticleForm(FlaskForm):
     
 class PublicationsForm(FlaskForm):
     title = StringField('Publications', render_kw={'readonly': True})
-    articles = FieldList(FormField(ArticleForm))
+    articles = FieldList(FormField(ArticleForm))#
+    
+class SubmitAndMoreForm(FlaskForm):
+    pass
     

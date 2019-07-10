@@ -15,7 +15,7 @@
     		<li>Uncheck the RCT column box for any study you presume not to be a RCT.</li>
     		<li>Click on the 'click to submit' button at the buttom of the page when you finish to submit your response.</li>
     	</ol>
-    	<form action="{{ url_for('process') }}" method="post">
+    	<form action="{{ url_for('main.process') }}" method="post">
     		{{ pub_form.hidden_tag() }}
     		<div>
     			<table class="dataframe table table-striped table-responsive table-hover">

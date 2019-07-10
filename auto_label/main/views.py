@@ -5,19 +5,19 @@ Created on Mon Jun 24 17:37:09 2019
 
 @author: ja18581
 """
-
-from auto_label import app, db
+from auto_label.main import bp
+from auto_label import db
 from flask import render_template, request
 import pandas as pd
 from nltk import tokenize
 
-from auto_label.forms import ArticleForm, PublicationsForm
+from auto_label.main.forms import ArticleForm, PublicationsForm
 from auto_label.models import Psentence, Nsentence, Pclause, Abstract
 
 
-@app.route('/')
+@bp.route('/')
 def index():
-    abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(50)\
+    abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(5)\
                                 .with_entities(Abstract.pmid,
                                                Abstract.abstract).statement, con=db.session.bind)
     #abstract = pd.DataFrame(articles_list)
@@ -41,7 +41,7 @@ def index():
     
     return render_template('index.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts))
 
-@app.route('/process/', methods=['GET','POST'])
+@bp.route('/process/', methods=['GET','POST'])
 def process():
         
     pub_form = PublicationsForm()
@@ -57,10 +57,8 @@ def process():
                 abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
                 abstr.count += 1
                 
-                psent = {'sentence':form_data['sentence'], 'label':form_data['rct'], 'abstract_id':form_data['number'], 
-                         'clause':form_data['clause']}#use this to query Abstarct Id
-                positive_sent.append(psent)
                 for s in form_data['sentence'].split('***'):
+                    positive_sent.append(s)
                     p = Psentence(sentence=s, label = True, abstract_id = abstr.id)
                     db.session.add(p)
                 db.session.commit() #committed so that clause could have Id to relate to
@@ -83,8 +81,8 @@ def process():
             raise
             
         nsents = {'Item': 'negaitve sentences', 'Count': len(nl)}
-        psents = {'Item': 'positve sentences', 'Count': len(form_data['sentence'].split('***'))}
-        clause = {'Item': 'positve clause/phrase', 'Count': len(form_data['clause'].split('***'))}
+        psents = {'Item': 'positve sentences', 'Count': len(positive_sent)} #fix its capturing only d last one
+        clause = {'Item': 'positve clause/phrase', 'Count': len(clause_list)}
         
         summary = pd.DataFrame([psents, nsents, clause])
         return render_template('process.html', msg = summary.to_html())#display temporary stats 
@@ -92,7 +90,7 @@ def process():
     return render_template('index.html', pub_form=pub_form)
 
 
-@app.route('/progress_view/')
+@bp.route('/progress_view/')
 def view_progress():#query the clause, sentences tables to know count
     psents = {'Item': 'positve sentences', 'Count': Psentence.query.count()}
     nsents = {'Item': 'negaitve sentences', 'Count': Nsentence.query.count()}
