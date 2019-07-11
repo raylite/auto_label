@@ -6,15 +6,14 @@ Created on Wed Jul 10 15:21:45 2019
 @author: ja18581
 """
 
-import click
+#import click
 from auto_label import db
 from auto_label.models import Psentence, Nsentence, Pclause, Abstract
 from sqlalchemy import exists
 import pandas as pd
 from pathlib import Path
-import os
-
-basedir = os.path.abspath(os.path.dirname(__file__))
+from flask import current_app, g
+#from flask.cli import with_appcontext
 
 def register(app):
     @app.cli.group()
@@ -31,28 +30,35 @@ def register(app):
         report if has content"""
         
         exist = db.session.query(exists().where(Abstract.count==0)).scalar()
+        print (exist)
         if exist:
             print(f'Table {Abstract.__table__} is not empty. You do not need to do anything further')
         else:
-            print(f'Table {Abstract.__table__} is empty. Call load() to pre-load data')
+            print(f'Table {Abstract.__table__} is empty. Call populate() to pre-load data')
         
         pass
     
     @dbprep.command()
     def populate():
         try:
-            data = pd.read_csv(Path(basedir, 'data', 'rct_045.csv'))
+            data = pd.read_csv(Path(current_app.config['DATA_FOLDER'], 'rct_45.csv'))
+            print ('Data successfully loaded to database')
             data.dropna(subset=['PMID', 'Abstract'], inplace=True)
             data['PMID'] = data['PMID'].astype('int64')
-            data = data[['PMID', 'Abstract']].sample(n=50000)
+            data = data[['PMID', 'Abstract']].sample(n=5)
             for idx, content in data.iterrows():
+                print(f'CONTENT {content.PMID}; {content.Abstract}')
                 abstr = Abstract(pmid=content['PMID'], abstract=content['Abstract'], count=0)
+                print(f'ABSTRACT: {abstr.pmid}, {abstr.abstract}')
                 db.session.add(abstr)
             db.session.commit()
+            print('Successful committed to database')
             
-            print ('Data successfully loaded to database')
-        except:
+        except Exception as e:
             print('Data cannot be loaded. Check that the path data/rct_045.csv exists in project home')
+            db.session.rollback()
+            print(f'Error committing. Error code/info: {str(e)}')
+            
     
     @dbprep.command()
     def wipeall():
@@ -68,4 +74,5 @@ def register(app):
             db.session.commit()
         except:
             db.session.rollback()
+            print('Unable to delete tables')
         

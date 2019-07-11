@@ -14,7 +14,7 @@ class Abstract(db.Model):
     pmid = db.Column(db.Integer, index=True, unique=True)
     abstract = db.Column(LONGTEXT())
     count = db.Column(db.Integer)
-    non_rct = db.Column(db.Boolean)
+    non_rct = db.Column(db.Boolean, default=False)
     nsentences = db.relationship('Nsentence', backref = 'source', lazy= 'dynamic')
     
     def __init__(self, pmid=None, abstract=None, count=None):

@@ -7,7 +7,7 @@ Created on Mon Jun 24 17:37:47 2019
 """
 
 from flask_wtf import FlaskForm
-from wtforms.fields import BooleanField, FieldList, FormField, IntegerField, StringField 
+from wtforms.fields import BooleanField, FieldList, FormField, IntegerField, StringField, SubmitField
 from wtforms.widgets import TextArea
 #from auto_label.models import *
 
@@ -22,6 +22,10 @@ class PublicationsForm(FlaskForm):
     title = StringField('Publications', render_kw={'readonly': True})
     articles = FieldList(FormField(ArticleForm))#
     
-class SubmitAndMoreForm(FlaskForm):
-    pass
+class SubmitForm(FlaskForm):
+    submit = SubmitField('Click to submit and end')
+    
+class MoreForm(FlaskForm):
+    subandloadmore = SubmitField('Click to save response and load more')
+    
     

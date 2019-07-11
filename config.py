@@ -12,6 +12,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_MAX_OVERFLOW = int(os.getenv('MAX_OVERFLOW'))
     MYSQL_DATABASE_CHARSET = 'utf8mb4'
+    DATA_FOLDER = os.path.join(APP_ROOT, 'data')
     
 class ProductionConfig(Config):
     pass

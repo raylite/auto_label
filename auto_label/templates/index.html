@@ -17,6 +17,9 @@
     	</ol>
     	<form action="{{ url_for('main.process') }}" method="post">
     		{{ pub_form.hidden_tag() }}
+    		{{ sub_form.hidden_tag() }}
+    		{{ more_form.hidden_tag() }}
+
     		<div>
     			<table class="dataframe table table-striped table-responsive table-hover">
     				<tr>
@@ -38,8 +41,8 @@
     			</table>
     		</div>
     		
-    		
-    		<input type="submit" value="Click when done"/>
+    		{{ wtf.quick_form(sub_form) }}
+    		{{ wtf.quick_form(more_form) }}
     	</form>
 	</div>
 

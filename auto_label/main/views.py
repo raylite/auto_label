@@ -5,24 +5,29 @@ Created on Mon Jun 24 17:37:09 2019
 
 @author: ja18581
 """
-from auto_label.main import bp
+
 from auto_label import db
-from flask import render_template, request
+from flask import render_template, request, url_for, redirect
 import pandas as pd
 from nltk import tokenize
 
-from auto_label.main.forms import ArticleForm, PublicationsForm
+from auto_label.main import bp
+from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm
 from auto_label.models import Psentence, Nsentence, Pclause, Abstract
 
 
 @bp.route('/')
 def index():
+    
     abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(5)\
                                 .with_entities(Abstract.pmid,
                                                Abstract.abstract).statement, con=db.session.bind)
     #abstract = pd.DataFrame(articles_list)
     
     pub_form = PublicationsForm()
+    submit_form = SubmitForm()
+    loadmore_form = MoreForm()
+    
     pub_form.title.data = 'Publications List'
     
     abstracts = []
@@ -39,21 +44,23 @@ def index():
         pub_form.articles.append_entry(art_form)
     
     
-    return render_template('index.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts))
+    return render_template('index.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts), 
+                           sub_form = submit_form, more_form = loadmore_form)
 
 @bp.route('/process/', methods=['GET','POST'])
 def process():
         
     pub_form = PublicationsForm()
+    submit_form = SubmitForm()
         
-    if request.method == 'POST':
+    if submit_form.validate_on_submit() and request.method == 'POST':
         #update database
         positive_sent = []
         neg_sent = []
         clause_list = []
         
         for idx, form_data in enumerate(pub_form.articles.data):
-            if form_data['rct'] == True:
+            if form_data['rct'] == False:
                 abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
                 abstr.count += 1
                 
@@ -80,14 +87,16 @@ def process():
             db.session.rollback()
             raise
             
-        nsents = {'Item': 'negaitve sentences', 'Count': len(nl)}
+        nsents = {'Item': 'negaitve sentences', 'Count': len(neg_sent)}
         psents = {'Item': 'positve sentences', 'Count': len(positive_sent)} #fix its capturing only d last one
         clause = {'Item': 'positve clause/phrase', 'Count': len(clause_list)}
         
         summary = pd.DataFrame([psents, nsents, clause])
         return render_template('process.html', msg = summary.to_html())#display temporary stats 
-    
-    return render_template('index.html', pub_form=pub_form)
+    #elif loadmore_form.validate_on_submit():
+        
+    ##more form will do same the reload index
+    return redirect(url_for('main.index'))
 
 
 @bp.route('/progress_view/')
