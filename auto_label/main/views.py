@@ -12,7 +12,7 @@ import pandas as pd
 from nltk import tokenize
 
 from auto_label.main import bp
-from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm
+from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm, CloseForm
 from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response
 
 
@@ -26,7 +26,7 @@ def index():
     
     pub_form = PublicationsForm()
     submit_form = SubmitForm()
-    loadmore_form = MoreForm()
+    
     
     pub_form.title.data = 'Publications List'
     
@@ -45,13 +45,15 @@ def index():
     
     
     return render_template('index.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts), 
-                           sub_form = submit_form, more_form = loadmore_form)
+                           sub_form = submit_form)
 
 @bp.route('/process/', methods=['GET','POST'])
 def process():
         
     pub_form = PublicationsForm()
     submit_form = SubmitForm()
+    loadmore_form = MoreForm()
+    close_form = CloseForm()
         
     if submit_form.validate_on_submit() and request.method == 'POST':
         #update database
@@ -103,11 +105,31 @@ def process():
         clause = {'Item': 'positve clause/phrase', 'Count': len(clause_list)}
         
         summary = pd.DataFrame([psents, nsents, clause])
-        return render_template('process.html', msg = summary.to_html())#display temporary stats 
+        return render_template('process.html', msg = summary.to_html(), more_form = loadmore_form,
+                               close_form = close_form)#display temporary stats 
     #elif loadmore_form.validate_on_submit():
         
     ##more form will do same the reload index
     return redirect(url_for('main.index'))
+
+@bp.route('/terminate/', methods=['GET','POST'])
+def terminate():
+    close_form = CloseForm()
+    
+    if close_form.validate_on_submit():
+        return render_template('terminate.html')   
+    
+    return render_template('terminate.html')
+
+@bp.route('/loadmore/', methods=['GET','POST'])
+def more():
+    loadmore_form = MoreForm()
+    
+    if loadmore_form.validate_on_submit():
+        return redirect(url_for('main.index'))  
+    
+    return redirect(url_for('main.index'))
+
 
 
 @bp.route('/progress_view/')

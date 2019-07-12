@@ -10,6 +10,21 @@
     		<div>
                 {{ msg | safe }}
     		</div>
-        <p>Thank you for your participation.</p>
+        <p>Click a button below.</p>
+        <div>
+            <form action="{{ url_for('main.more') }}" method="post" name="more">
+                {% if more_form %}
+                
+                {{ wtf.quick_form(more_form) }}
+                {% endif %}
+            </form>
+
+            <form action="{{ url_for('main.terminate') }}" method="post" name="close">
+                {% if close_form %}
+                
+                {{ wtf.quick_form(close_form) }}
+                {% endif %}
+            </form>
+        </div>
     </div>
 {% endblock %}

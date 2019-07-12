@@ -23,9 +23,12 @@ class PublicationsForm(FlaskForm):
     articles = FieldList(FormField(ArticleForm))#
     
 class SubmitForm(FlaskForm):
-    submit = SubmitField('Click to submit and end')
+    submit = SubmitField('Click to save responses')
     
 class MoreForm(FlaskForm):
-    subandloadmore = SubmitField('Click to save response and load more')
+    subandloadmore = SubmitField('Click to load more')
+    
+class CloseForm(FlaskForm):
+    submit = SubmitField('End process')
     
     
