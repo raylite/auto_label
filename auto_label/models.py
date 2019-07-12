@@ -15,7 +15,7 @@ class Abstract(db.Model):
     abstract = db.Column(LONGTEXT())
     count = db.Column(db.Integer)
     non_rct = db.Column(db.Boolean, default=False)
-    nsentences = db.relationship('Nsentence', backref = 'source', lazy= 'dynamic')
+    responses = db.relationship('Response', backref = 'root', lazy= 'dynamic')
     
     def __init__(self, pmid=None, abstract=None, count=None):
         self.data = (pmid, abstract)
@@ -29,8 +29,8 @@ class Psentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
     label = db.Column(db.Boolean)
-    abstract_id = db.Column(db.Integer, db.ForeignKey('abstract.id'))
-    abstract = db.relationship('Abstract', backref='source')
+    response_id = db.Column(db.Integer, db.ForeignKey('response.id'))
+    
     
     def __repr__(self):
         return f'<Source ID: {self.abstract_id}; Content: {self.sentence}; Label: {self.label}>'
@@ -49,7 +49,23 @@ class Nsentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
     label = db.Column(db.Boolean)
-    abstract_id = db.Column(db.Integer, db.ForeignKey('abstract.id'))
+    response_id = db.Column(db.Integer, db.ForeignKey('response.id'))
     
     def __repr__(self):
         return f'<Source ID: {self.abstract_id}; Content: {self.sentence}; Label: {self.label}>'
+    
+class Response(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    neg_sentence = db.Column(LONGTEXT()) #joined
+    pos_sent = db.Column(LONGTEXT()) #joined
+    clause = db.Column(LONGTEXT()) #joined
+    len_of_neg = db.Column(db.Integer)
+    len_of_pos = db.Column(db.Integer)
+    len_of_clause = db.Column(db.Integer)
+    abstract_id = db.Column(db.Integer, db.ForeignKey('abstract.id'))
+    nsentences = db.relationship('Nsentence', backref = 'source', lazy= 'dynamic')
+    psentences = db.relationship('Psentence', backref = 'source', lazy = 'dynamic')
+    
+    
+    def __repr__(self):
+        return f'<Source ID: {self.abstract_id.pmid}; Length of Neg: {self.len_of_neg}; Length of Pos: {self.len_of_pos}; Clause size: {self.len_of_clause}>'

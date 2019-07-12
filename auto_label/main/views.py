@@ -13,7 +13,7 @@ from nltk import tokenize
 
 from auto_label.main import bp
 from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm
-from auto_label.models import Psentence, Nsentence, Pclause, Abstract
+from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response
 
 
 @bp.route('/')
@@ -55,40 +55,51 @@ def process():
         
     if submit_form.validate_on_submit() and request.method == 'POST':
         #update database
-        positive_sent = []
-        neg_sent = []
+        pos_sent_list = []
+        neg_sent_list = []
         clause_list = []
         
         for idx, form_data in enumerate(pub_form.articles.data):
-            if form_data['rct'] == False:
+            if form_data['rct'] == True:
                 abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
-                abstr.count += 1
+                abstr.count += 1 #increase the number of times the abtract has been labelled
+                
+                neg_sent = tokenize.sent_tokenize(abstr.abstract)
+                neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('***')]
+                response = Response(neg_sentence = ' '.join(neg_sent), pos_sent = form_data['sentence'], clause = form_data['clause'],
+                                    len_of_neg = len(neg_sent), len_of_pos = len(form_data['sentence'].split('***')),
+                                    len_of_clause = len(form_data['clause'].split('***')), abstract_id = abstr.id)
+                db.session.add(response)
+                db.session.commit()
+                
+                ab_source = Response.query.filter_by(abstract_id = abstr.id).first() #abstract source for the responses
                 
                 for s in form_data['sentence'].split('***'):
-                    positive_sent.append(s)
-                    p = Psentence(sentence=s, label = True, abstract_id = abstr.id)
+                    pos_sent_list.append(s)
+                    p = Psentence(sentence=s, label = True, response_id = ab_source.id)
                     db.session.add(p)
                 db.session.commit() #committed so that clause could have Id to relate to
                 
+                sen_source = Psentence.query.filter_by(response_id = ab_source.id).first() #sentence source for the clause
+                
                 for s in form_data['clause'].split('***'):
-                    source = Psentence.query.filter_by(abstract_id = abstr.id).first()
-                    c = Pclause(clause=s, label = True, sentence_id = source.id)
+                    c = Pclause(clause=s, label = True, sentence_id = sen_source.id)
                     clause_list.append(c)
                 
                 nl = tokenize.sent_tokenize(abstr.abstract)
                 for n in (s for s in nl if s not in form_data['sentence'].split('***')):
-                    ns = Nsentence(sentence=n, label = False, abstract_id = abstr.id)
-                    neg_sent.append(ns)
+                    ns = Nsentence(sentence=n, label = False, response_id = ab_source.id)
+                    neg_sent_list.append(ns)
         try:
-            db.session.bulk_save_objects(neg_sent)
+            db.session.bulk_save_objects(neg_sent_list)
             db.session.bulk_save_objects(clause_list)
             db.session.commit()
         except:
             db.session.rollback()
             raise
             
-        nsents = {'Item': 'negaitve sentences', 'Count': len(neg_sent)}
-        psents = {'Item': 'positve sentences', 'Count': len(positive_sent)} #fix its capturing only d last one
+        nsents = {'Item': 'negaitve sentences', 'Count': len(neg_sent_list)}
+        psents = {'Item': 'positve sentences', 'Count': len(pos_sent_list)} #fix its capturing only d last one
         clause = {'Item': 'positve clause/phrase', 'Count': len(clause_list)}
         
         summary = pd.DataFrame([psents, nsents, clause])
@@ -101,10 +112,12 @@ def process():
 
 @bp.route('/progress_view/')
 def view_progress():#query the clause, sentences tables to know count
+    responses = {'Item': 'total abstracts labelled', 'Count': Response.query.count()}
+    unique_resp = {'Item': 'unique abstracts labelled', 'Count': Response.query.with_entities(Response.abstract_id).distinct().count()}
     psents = {'Item': 'positve sentences', 'Count': Psentence.query.count()}
     nsents = {'Item': 'negaitve sentences', 'Count': Nsentence.query.count()}
     clause = {'Item': 'positve clause/phrase', 'Count': Pclause.query.count()}
     
-    status_report = pd.DataFrame([psents, nsents, clause])
+    status_report = pd.DataFrame([responses, unique_resp, psents, nsents, clause])
     
     return render_template('progress.html', report = status_report.to_html())
