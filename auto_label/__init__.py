@@ -5,12 +5,14 @@ from flask_migrate import Migrate
 import logging
 from logging.handlers import RotatingFileHandler
 from flask_bootstrap import Bootstrap
+from flask_session import Session
 import os
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 bootstrap = Bootstrap()
+sess = Session()
 
 def create_app(config_class = Config):
     app = Flask(__name__)
@@ -27,12 +29,16 @@ def create_app(config_class = Config):
     db.init_app(app)
     migrate.init_app(app, db)
     bootstrap.init_app(app)
+    sess.init_app(app)
     
     from auto_label.errors import bp as errors_bp
-    app.register_blueprint(errors_bp)
+    app.register_blueprint(errors_bp, url_prefix='/error')
     
     from auto_label.main import bp as main_bp
     app.register_blueprint(main_bp)
+    
+    from auto_label.auth import bp as auth_bp
+    app.register_blueprint(auth_bp)
     
     
     if not app.debug:

@@ -69,3 +69,39 @@ class Response(db.Model):
     
     def __repr__(self):
         return f'<Source ID: {self.abstract_id.pmid}; Length of Neg: {self.len_of_neg}; Length of Pos: {self.len_of_pos}; Clause size: {self.len_of_clause}>'
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), index = True, unique = True)
+    name = db.Column(db.String(255), index = True)
+    abstracts = db.relationship('Abstract', secondary='user_abstracts', lazy = 'subquery',
+                               backref = db.backref('labellers', lazy = True))
+    authenticated = db.Column(db.Boolean, default = False)
+    
+    def __repr__(self):
+        return f'<User: {self.email}; Abstracts: {[abstract.pmid for abstract in self.abstracts]}>'
+    
+    def is_active(self):
+        """True, as all users are active."""
+        return True
+
+    def get_id(self):
+        """Return the email address to satisfy Flask-Login's requirements."""
+        return self.email
+
+    def is_authenticated(self):
+        """Return True if the user is authenticated."""
+        return self.authenticated
+
+    def is_anonymous(self):
+        """False, as anonymous users aren't supported."""
+        return False
+
+    
+user_abstracts = db.Table('user_abstracts',
+                          db.Column('user.id', db.Integer, db.ForeignKey('user.id'), primary_key = True),
+                          db.Column('abstract.id', db.Integer, db.ForeignKey('abstract.id'), primary_key = True))
+    
+
+    
+    

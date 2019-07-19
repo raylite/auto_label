@@ -7,23 +7,37 @@ Created on Mon Jun 24 17:37:09 2019
 """
 
 from auto_label import db
-from flask import render_template, request, url_for, redirect
+from flask import render_template, url_for, redirect, session
 import pandas as pd
 from nltk import tokenize
+from sqlalchemy.sql.expression import func
 
 from auto_label.main import bp
 from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm, CloseForm
-from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response
+from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response, User
+from auto_label.login_required import login_required
+
+
 
 
 @bp.route('/')
+@bp.route('/index/')
 def index():
-    
-    abstract = pd.read_sql(sql=db.session.query(Abstract).filter(Abstract.count == 0).limit(5)\
-                                .with_entities(Abstract.pmid,
-                                               Abstract.abstract).statement, con=db.session.bind)
-    #abstract = pd.DataFrame(articles_list)
-    
+    return render_template('index.html', title = 'login')
+
+
+@bp.route('/label')
+@login_required
+def label():
+    user = User.query.filter_by(email=session['user']['email']).first()
+    user_label_list = [abstract.pmid for abstract in user.abstracts]
+    print (f'LIST: {user_label_list}')
+    abstract = pd.read_sql(sql=db.session.query(Abstract).\
+                           filter(Abstract.count < 2).\
+                           filter(Abstract.pmid.notin_(user_label_list)).\
+                           order_by(func.random()).limit(5).\
+                           with_entities(Abstract.pmid, Abstract.abstract, Abstract.count).statement, con=db.session.bind)
+   
     pub_form = PublicationsForm()
     submit_form = SubmitForm()
     
@@ -38,24 +52,30 @@ def index():
         abstracts.append({'Abstract': tokenize.sent_tokenize(article['abstract'])})
         art_form.sentence = '' 
         art_form.clause = ''
-        #pub_form.abstract = article['abstract']
-        
-        
+        print(f"{article['pmid']}: {article['count']}")
         pub_form.articles.append_entry(art_form)
+        
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
     
     
-    return render_template('index.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts), 
+    return render_template('label.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts), 
                            sub_form = submit_form)
 
 @bp.route('/process/', methods=['GET','POST'])
+@login_required
 def process():
         
     pub_form = PublicationsForm()
     submit_form = SubmitForm()
     loadmore_form = MoreForm()
     close_form = CloseForm()
-        
-    if submit_form.validate_on_submit() and request.method == 'POST':
+    
+    user = User.query.filter_by(email=session['user']['email']).first()
+    
+    if submit_form.validate_on_submit():
         #update database
         pos_sent_list = []
         neg_sent_list = []
@@ -65,6 +85,7 @@ def process():
             if form_data['rct'] == True:
                 abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
                 abstr.count += 1 #increase the number of times the abtract has been labelled
+                user.abstracts.append(abstr)#add to users labelled list for many to may relnshp
                 
                 neg_sent = tokenize.sent_tokenize(abstr.abstract)
                 neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('***')]
@@ -109,10 +130,10 @@ def process():
                                close_form = close_form)#display temporary stats 
     #elif loadmore_form.validate_on_submit():
         
-    ##more form will do same the reload index
-    return redirect(url_for('main.index'))
+    
 
 @bp.route('/terminate/', methods=['GET','POST'])
+@login_required
 def terminate():
     close_form = CloseForm()
     
@@ -128,11 +149,12 @@ def more():
     if loadmore_form.validate_on_submit():
         return redirect(url_for('main.index'))  
     
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.label'))
 
 
 
 @bp.route('/progress_view/')
+@login_required
 def view_progress():#query the clause, sentences tables to know count
     responses = {'Item': 'total abstracts labelled', 'Count': Response.query.count()}
     unique_resp = {'Item': 'unique abstracts labelled', 'Count': Response.query.with_entities(Response.abstract_id).distinct().count()}

@@ -12,9 +12,21 @@
 					<span class="sr-only">Toggle navigation</span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" id = "banner" href="{{ url_for('main.index') }}"><strong>Intervention comparision lablling app</strong></a>
+				{% if session['user'] %}
+					<a class="navbar-brand" id = "banner" href="{{ url_for('main.label') }}"><strong>Intervention comparision lablling app</strong></a>
+					{% else %}
+					<a class="navbar-brand" id = "banner" href="{{ url_for('main.index') }}"><strong>Intervention comparision lablling app</strong></a>
+				{% endif %}
 			</div>
-			
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				 <ul class="nav navbar-nav navbar-right">
+				 	{% if session['user'] %}
+                    	<li><a href="{{ url_for('auth.logout') }}"> Logout</a></li>
+                    {% else %}
+                    	<li><a href="{{ url_for('auth.login') }}"> Login </a></li>
+                    {% endif %}
+                </ul>
+			</div>
 		</div>
 		
 	</nav>
