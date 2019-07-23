@@ -64,7 +64,6 @@ def authorized():
                'return-client-request-id': 'true'}
     response = ms_graph.get(endpoint, headers=headers).data
     
-    print(f'RESPONSE: {response}')
     'add user to OR load user from db'
     user = User.query.filter_by(email=response['mail']).first()
     if user:

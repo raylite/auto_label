@@ -31,7 +31,7 @@ def index():
 def label():
     user = User.query.filter_by(email=session['user']['email']).first()
     user_label_list = [abstract.pmid for abstract in user.abstracts]
-    print (f'LIST: {user_label_list}')
+    
     abstract = pd.read_sql(sql=db.session.query(Abstract).\
                            filter(Abstract.count < 2).\
                            filter(Abstract.pmid.notin_(user_label_list)).\
@@ -52,7 +52,7 @@ def label():
         abstracts.append({'Abstract': tokenize.sent_tokenize(article['abstract'])})
         art_form.sentence = '' 
         art_form.clause = ''
-        print(f"{article['pmid']}: {article['count']}")
+        
         pub_form.articles.append_entry(art_form)
         
     try:
@@ -113,6 +113,10 @@ def process():
                 for n in (s for s in nl if s not in form_data['sentence'].split('***')):
                     ns = Nsentence(sentence=n, label = False, response_id = ab_source.id)
                     neg_sent_list.append(ns)
+            else:
+                abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
+                db.session.delete(abstr)#remove the non RCTs
+                print('Article removed')
         try:
             db.session.bulk_save_objects(neg_sent_list)
             db.session.bulk_save_objects(clause_list)
@@ -120,6 +124,7 @@ def process():
         except:
             db.session.rollback()
             raise
+    
             
         nsents = {'Item': 'negaitve sentences', 'Count': len(neg_sent_list)}
         psents = {'Item': 'positve sentences', 'Count': len(pos_sent_list)} #fix its capturing only d last one
