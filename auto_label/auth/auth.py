@@ -22,6 +22,7 @@ ms_graph = oauth.remote_app('microsoft',
                             consumer_key = os.getenv('CLIENT_ID'),
                             consumer_secret = os.getenv('CLIENT_SECRET'),
                             request_token_params={'scope': 'User.Read'},
+                            
                             base_url=os.getenv('RESOURCE') + os.getenv('API_VERSION') + '/',
                             request_token_url=None, 
                             access_token_method='POST',

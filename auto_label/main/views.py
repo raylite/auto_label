@@ -88,16 +88,16 @@ def process():
                 user.abstracts.append(abstr)#add to users labelled list for many to may relnshp
                 
                 neg_sent = tokenize.sent_tokenize(abstr.abstract)
-                neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('***')]
+                neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('\n***')]
                 response = Response(neg_sentence = ' '.join(neg_sent), pos_sent = form_data['sentence'], clause = form_data['clause'],
-                                    len_of_neg = len(neg_sent), len_of_pos = len(form_data['sentence'].split('***')),
-                                    len_of_clause = len(form_data['clause'].split('***')), abstract_id = abstr.id)
+                                    len_of_neg = len(neg_sent), len_of_pos = len(form_data['sentence'].split('\n***')),
+                                    len_of_clause = len(form_data['clause'].split('\n***')), abstract_id = abstr.id)
                 db.session.add(response)
                 db.session.commit()
                 
                 ab_source = Response.query.filter_by(abstract_id = abstr.id).first() #abstract source for the responses
                 
-                for s in form_data['sentence'].split('***'):
+                for s in form_data['sentence'].split('\n***'):
                     pos_sent_list.append(s)
                     p = Psentence(sentence=s, label = True, response_id = ab_source.id)
                     db.session.add(p)
@@ -105,12 +105,12 @@ def process():
                 
                 sen_source = Psentence.query.filter_by(response_id = ab_source.id).first() #sentence source for the clause
                 
-                for s in form_data['clause'].split('***'):
+                for s in form_data['clause'].split('\n***'):
                     c = Pclause(clause=s, label = True, sentence_id = sen_source.id)
                     clause_list.append(c)
                 
                 nl = tokenize.sent_tokenize(abstr.abstract)
-                for n in (s for s in nl if s not in form_data['sentence'].split('***')):
+                for n in (s for s in nl if s not in form_data['sentence'].split('\n***')):
                     ns = Nsentence(sentence=n, label = False, response_id = ab_source.id)
                     neg_sent_list.append(ns)
             else:
@@ -126,9 +126,9 @@ def process():
             raise
     
             
-        nsents = {'Item': 'negaitve sentences', 'Count': len(neg_sent_list)}
-        psents = {'Item': 'positve sentences', 'Count': len(pos_sent_list)} #fix its capturing only d last one
-        clause = {'Item': 'positve clause/phrase', 'Count': len(clause_list)}
+        nsents = {'Item': 'other sentences', 'Count': len(neg_sent_list)}
+        psents = {'Item': 'sentences indicating comparison', 'Count': len(pos_sent_list)} #fix its capturing only d last one
+        clause = {'Item': 'clause/phrase indicating comparison', 'Count': len(clause_list)}
         
         summary = pd.DataFrame([psents, nsents, clause])
         return render_template('process.html', msg = summary.to_html(), more_form = loadmore_form,
@@ -147,14 +147,16 @@ def terminate():
     
     return render_template('terminate.html')
 
+
 @bp.route('/loadmore/', methods=['GET','POST'])
+@login_required
 def more():
     loadmore_form = MoreForm()
     
     if loadmore_form.validate_on_submit():
-        return redirect(url_for('main.index'))  
+        return redirect(url_for('main.label'))  
     
-    return redirect(url_for('main.label'))
+    return render_template('label.html')
 
 
 

@@ -62,33 +62,36 @@
     		$(this).closest('tr').find('.sentence').val(copyText);
     	}
     	else {
-    		$(this).closest('tr').find('.sentence').val($(this).closest('tr').find('.sentence').val() + '***' + copyText);
+    		$(this).closest('tr').find('.sentence').val($(this).closest('tr').find('.sentence').val() + '\n' + '***' + copyText);
     	}
     });
 
-    $(".sentence").select(function () {
-    	var selectedText = '';
-    	if (window.getSelection){
-    			selectedText = window.getSelection().toString();
-    	}
-    	else if (document.selection && document.selection.type == "Text"){
-    			selectedText = document.selection().toString();
-    	}
+    $('.sentence').select(function () {
 
+    	var selectedText = '';
+    	//var text = "";
+    	var activeEl = document.activeElement;
+    	var activeElTagName = activeEl ? activeEl.nodeName.toLowerCase() : null;
+    	if ((activeElTagName == "textarea") || (activeElTagName == "input")) {
+        	selectedText = activeEl.value.slice(activeEl.selectionStart, activeEl.selectionEnd);
+    	} 
+    	else if (window.getSelection) {
+        selectedText = window.getSelection().toString();
+    	}
+    	console.log(selectedText)
     	if (!$.trim($(this).closest('tr').find('.clause').val())){
     		
     		$(this).closest('tr').find('.clause').val(selectedText);
     	}
     	else{
-    		$(this).closest('tr').find('.clause').val($(this).closest('tr').find('.clause').val() + '***' + selectedText);
+    		$(this).closest('tr').find('.clause').val($(this).closest('tr').find('.clause').val() + '\n***' + selectedText);
     	}
-    	//$(this).closest('tr').find('.clause').text(window.getSelection().toString());
 
     	window.getSelection().removeAllRanges();
-    	
     });
 
-    $('.sentence').dblclick(function(){
+
+	$('.sentence').dblclick(function(){
     	$(this).val('');
     	$(this).closest('tr').find('.clause').val('');
 

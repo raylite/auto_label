@@ -1,7 +1,7 @@
 server {
     # listen on port 80 (http)
     listen 80;
-    server_name temacstool.com www.temacstool.com;
+    server_name app-dc2-cirx-p0-vip.services.bris.ac.uk app-dc2-cirx-p0-vip.services.bristol.ac.uk;
     location / {
         # redirect any requests to the same URL but on https
         return 301 https://$host$request_uri;
@@ -10,19 +10,19 @@ server {
 server {
     # listen on port 443 (https)
     listen 443 ssl;
-    server_name temacstool.com www.temacstool.com;
+    server_name app-dc2-cirx-p0-vip.services.bris.ac.uk app-dc2-cirx-p0-vip.services.bristol.ac.uk;
 
     # location of the self-signed SSL certificate
-    ssl_certificate /home/qasimbabatunde_gmail_com/auto_label/certs/cert.pem;
-    ssl_certificate_key /home/qasimbabatunde_gmail_com/auto_label/certs/key.pem;
+    ssl_certificate /etc/nginx/ssl/app-dc2-cirx-p0.crt;
+    ssl_certificate_key /etc/nginx/ssl/brtcadmin.key;
 
     # write access and error logs to /var/log
-    access_log /var/log/label_access.log;
-    error_log /var/log/label_error.log;
+    access_log /var/log/nginx/label_access.log;
+    error_log /var/log/nginx/label_error.log;
 
     location / {
         # forward application requests to the gunicorn server
-        proxy_pass http://localhost:8000;
+        proxy_pass http://127.0.0.1:8000;
         proxy_redirect off;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -31,7 +31,7 @@ server {
 
     location /static {
         # handle static files directly, without forwarding to the application
-        alias /home/qasimbabatunde_gmail_com/auto_label/auto_label/static;
+        alias /home/ja18581/auto_label/auto_label/static;
         expires 30d;
     }
 }

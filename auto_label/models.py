@@ -72,8 +72,8 @@ class Response(db.Model):
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), index = True, unique = True)
-    name = db.Column(db.String(255), index = True)
+    email = db.Column(db.String(150), index = True, unique = True)
+    name = db.Column(db.String(100), index = True)
     abstracts = db.relationship('Abstract', secondary='user_abstracts', lazy = 'subquery',
                                backref = db.backref('labellers', lazy = True))
     authenticated = db.Column(db.Boolean, default = False)

@@ -6,7 +6,7 @@ APP_ROOT = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(APP_ROOT, '.env'))
 
 class Config(object):
-    DeBUG = False
+    DEBUG = False
     TESTING = False
     SECRET_KEY = b'c55cd4aa79141c551bd9cfb2e28d64de7c3e5b08ff6cdf6f'#os.getenv('SECRET_KEY')#or binascii.hexlify(os.urandom(24))
     SQLALCHEMY_DATABASE_URI = f"{os.getenv('DATABASE_URL')}{os.getenv('DB_ADMIN')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
@@ -20,7 +20,9 @@ class Config(object):
     SESSION_COOKIE_SECURE = False
     
 class ProductionConfig(Config):
-    pass
+    REDIRECT_URI = os.getenv('PRODUCTION_REDIRECT_URI')
+    SESSION_COOKIE_SECURE = True
+    
     
 
 class DevelopmentConfig(Config):
