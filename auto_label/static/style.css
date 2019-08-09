@@ -14,14 +14,15 @@ table.dataframe, .dataframe th, .dataframe td {
   margin-bottom: 40px;
   font-size: 1em;
   vertical-align: middle;
+
 }
 
 
-table.dataframe{
+table{
 	margin: 10px;
 	overflow-y: auto;
 	overflow-x: auto;
-}
+  }
 
 tr:nth-child(odd)		{ background-color:#eee; }
 tr:nth-child(even)	{ background-color:#fff; }
@@ -77,6 +78,11 @@ a.sent {
 
 td {
   vertical-align: middle;
+  max-height: 100%;
+}
+
+tr {
+  width: 20px;
 }
 
 .process {
@@ -84,4 +90,9 @@ td {
   float: left;
   margin: 0 auto;
   padding: 2px;
+}
+
+td div {
+  max-height: 10px;
+  overflow: auto;
 }

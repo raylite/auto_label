@@ -20,11 +20,13 @@ if __name__=='__main__':
     
     abstract = db.Table('abstract', metadata, autoload=True, autoload_with=engine)
     
-    data = pd.read_csv(Path('.', 'data', 'rct_45.csv'))
+    data = pd.read_csv(Path('.', 'data', 'rct_14.csv'))
     print ('Data successfully loaded to database')
     data.dropna(subset=['PMID', 'Abstract'], inplace=True)
     data['PMID'] = data['PMID'].astype('int64')
-    data = data[['PMID', 'Abstract']].sample(n=50000)
+    data = data[data['is_rct_bal_svm_cnn'] == True]
+    print (data.shape)
+    data = data[['PMID', 'Abstract']].sample(n=200)
 
     abstr = [{'pmid':content['PMID'], 'abstract':content['Abstract'], 'count':0} for idx, content in data.iterrows()]
     try:

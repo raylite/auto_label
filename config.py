@@ -27,7 +27,8 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    
+    DEBUG_TB_INTERCEPT_REDIRECTS = os.getenv('INTERCEPT_REDIRECTS')##for debug toolbar
+    DEBUG_TB_PROFILER_ENABLED = os.getenv('PROFILER_ENABLED')
 class TestingConfig(Config):
     Testing = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'

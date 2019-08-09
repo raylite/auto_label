@@ -18,8 +18,8 @@
     	<form action="{{ url_for('main.process') }}" method="post">
     		{{ pub_form.hidden_tag() }}
   
-    		<div>
-    			<table class="dataframe table table-striped table-responsive table-hover">
+    		<div class="table-responsive-md">
+    			<table class="dataframe table table-striped table-hover w-auto">
     				<tr>
     					<th>Number</th>
     					<th>Abstract</th>
@@ -30,10 +30,10 @@
     				{% for article, abst in pub %}
     					<tr>
     						<td>{{ article.number(size=7)}}</td>
-    						<td>{% for a in abst.Abstract %} <a class='abstract' href="">{{ a }}</a>{% endfor %}</td>
+    						<td><div>{% for a in abst.Abstract %} <a class='abstract' href="">{{ a }}</a>{% endfor %}</div></td>
     						<td>{{ article.sentence(cols=40, rows=8, class='sentence') }}</td>
     						<td>{{ article.clause(cols=30, rows=8, class='clause') }}</td>
-    						<td>{{ article.rct }}</td>
+    						<td>{{ article.rct(class="form-check-input") }}</td>
     					</tr>
     				{% endfor %}
     			</table>

@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 import logging
 from logging.handlers import RotatingFileHandler
 from flask_bootstrap import Bootstrap
+from flask_debugtoolbar import DebugToolbarExtension
 from flask_session import Session
 import os
 
@@ -13,6 +14,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 bootstrap = Bootstrap()
 sess = Session()
+toolbar = DebugToolbarExtension()
 
 def create_app(config_class = Config):
     app = Flask(__name__)
@@ -30,6 +32,7 @@ def create_app(config_class = Config):
     migrate.init_app(app, db)
     bootstrap.init_app(app)
     sess.init_app(app)
+    toolbar.init_app(app)
     
     from auto_label.errors import bp as errors_bp
     app.register_blueprint(errors_bp, url_prefix='/error')
