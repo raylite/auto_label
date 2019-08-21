@@ -1,7 +1,7 @@
 body            { 
 	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-	max-width: 90%;
 	margin: auto;
+  padding: 15px;
 }
 h1, h2       { color: #377ba8; }
 h1, h2          { margin: 0; }
@@ -38,12 +38,6 @@ tr:hover            { background-color: #ffff99;}
   height:100px;
 }
 
-textarea {
-    margin: 0;
-    border-radius: 0;
-    color: #444; /* or whatever */
-    background-color: transparent;
-}
 
 a{
   outline: none;
@@ -78,11 +72,7 @@ a.sent {
 
 td {
   vertical-align: middle;
-  max-height: 100%;
-}
-
-tr {
-  width: 20px;
+  position: relative;
 }
 
 .process {
@@ -92,7 +82,21 @@ tr {
   padding: 2px;
 }
 
-td div {
-  max-height: 10px;
-  overflow: auto;
+table, th, td {
+    position: relative;
+    border: 1px solid black;
+    height: 100%;
+    width: 100%;
 }
+
+textarea {
+  height: 100%;
+}
+
+.btn {
+  margin: 0px;
+  border:solid white;
+}
+
+
+

@@ -11,8 +11,38 @@ from pathlib import Path
 import sqlalchemy as db
 import MySQLdb
 
-if __name__=='__main__':
+def dev_load():
     
+    
+    data = pd.read_csv(Path('.', 'data', 'rct_0_0.csv'))
+    print ('Data successfully loaded to database')
+    data.dropna(subset=['PMID', 'Abstract', 'NCT_Number'], inplace=True)
+    data['PMID'] = data['PMID'].astype('int64')
+    #data = data[data['rct_balanced'] == True]
+    print (data.shape)
+    data = data[['PMID', 'Abstract']].sample(n=250)
+
+    abstr = [{'pmid':content['PMID'], 'abstract':content['Abstract'], 'count':0} for idx, content in data.iterrows()]
+    
+    results = db_table_insert(abstr) 
+    
+    data.to_csv(Path('.', 'data', 'sample_rct.csv'), index = False)
+    print ('Extraction from the table just written')
+    
+    return results
+    
+    
+
+def prod_load():
+    data = pd.read_csv(Path('.', 'data', 'sample_rct.csv'))
+    data['PMID'] = data['PMID'].astype('int64')
+    abstr = [{'pmid':content['PMID'], 'abstract':content['Abstract'], 'count':0} for idx, content in data.iterrows()]
+    
+    results = db_table_insert(abstr)
+    
+    return results
+
+def db_table_insert(abstr):
     engine = db.create_engine('mysql://labelling_admin:p@55w0rd@127.0.0.1/label_db?charset=utf8mb4')
    
     metadata = db.MetaData()
@@ -20,29 +50,34 @@ if __name__=='__main__':
     
     abstract = db.Table('abstract', metadata, autoload=True, autoload_with=engine)
     
-    data = pd.read_csv(Path('.', 'data', 'rct_14.csv'))
-    print ('Data successfully loaded to database')
-    data.dropna(subset=['PMID', 'Abstract'], inplace=True)
-    data['PMID'] = data['PMID'].astype('int64')
-    data = data[data['is_rct_bal_svm_cnn'] == True]
-    print (data.shape)
-    data = data[['PMID', 'Abstract']].sample(n=200)
-
-    abstr = [{'pmid':content['PMID'], 'abstract':content['Abstract'], 'count':0} for idx, content in data.iterrows()]
     try:
         with connection as conn:
             query = db.insert(abstract)
     
-            ResultProxy = connection.execute(query,abstr)
-            results = connection.execute(db.select([abstract])).fetchall()
+            ResultProxy = conn.execute(query,abstr)
+            results = conn.execute(db.select([abstract])).fetchall()
     except Exception as e:
         print(f'A fatal error occured. Code: {e}')
-        
     
-    print ('Extraction from the table just written')
+    return results
     
-    df = pd.DataFrame(results)
-    df.columns = results[0].keys()
+    
+if __name__=='__main__':
+    
+    load_option = input('Choose the platform to load data for (Development/Production): ')
+    option = False
+    
+    while not option:
+        if load_option.lower() == 'p':
+            test_result = prod_load()
+            option = True
+        elif load_option.lower() == 'd':
+            test_result = dev_load()
+        else:
+            print('Please inpur the right deployment platform option')
+            
+    df = pd.DataFrame(test_result)
+    df.columns = test_result[0].keys()
     print(df.head(4))
     
     print('Create operation successful')
