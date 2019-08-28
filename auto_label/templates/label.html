@@ -12,7 +12,7 @@
 	    		List of RCTs for intervention comparison sentence extraction
 		    	</h3>
 		    	
-		    	<p><strong>Important Note: </strong> Below is a list of 50 RCT studies presented for identification and extraction of sentences that indicates interventions are being compared in each article. The guidelines are as follows:</p>
+		    	<p><strong>Important Note: </strong> Below is a list of 20 RCT studies presented for identification and extraction of sentences that indicates interventions are being compared in each article. The guidelines are as follows:</p>
 		    	<ol>
 		    		<li>Scan each abstract to identify any sentence of interest. Then, click on the sentence(s)</li>
 		    		<li>The sentence(s) automatically appears to the right of the abstract. If there occurs a <strong>mistake</strong>, double click the corresponding sentence column to the right of the abstract to change your choice.</li>
@@ -32,21 +32,21 @@
   			<div class="col-sm-1 visible-sm-block"></div>
     		<div class="table-responsive-md col-md-12 col-sm-10">
     			<table class="dataframe table table-striped table-hover w-auto">
-    				<tr>
-    					<th class="col-sm-1 mx-auto">Number</th>
-    					<th class="col-sm-7 mx-auto">Abstract</th>
-    					<th class="col-sm-2 mx-auto">Sentence</th>
-    					<th class="col-sm-1 mx-auto">Clause/Phrase</th>
-    					<th class="col-sm-1 mx-auto"> RCT</th>
+    				<tr><div class="col-sm-7">
+    					<th class="justify-content-center">Number</th>
+    					<th class="ustify-content-center">Abstract</th></div>
+    					<th class="col-sm-3 justify-content-center">Sentence</th>
+    					<div class="col-sm-2"><th class="justify-content-center">Clause/Phrase</th>
+    					<th class="justify-content-center"> RCT</th></div>
     				</tr>
     				{% for article, abst in pub %}
     				<div class="form-group">
-    					<tr>
-    						<td class="col-sm-1">{{ article.number(size=7)}}</td>
-    						<td id="abstract" class="col-sm-7">{% for a in abst.Abstract %} <a class='abstract text-justify' href="">{{ a }}</a>{% endfor %}</td>
-    						<td class="col-sm-2">{{ article.sentence(class_='sentence form-control') }}</td>
-    						<td class="col-sm-1">{{ article.clause(class_='clause form-control') }}</td>
-    						<td class="col-sm-1">{{ article.rct(class_="checkbox-bootstrap form-control") }}</td>
+    					<tr><div class="col-sm-7">
+    						<td>{{ article.number(size=7)}}</td>
+    						<td id="abstract">{% for a in abst.Abstract %} <a class='abstract text-justify' href="">{{ a }}</a>{% endfor %}</td></div>
+    						<td class="col-sm-3">{{ article.sentence(class_='sentence form-control') }}</td>
+    						<div class="col-sm-2"><td>{{ article.clause(class_='clause form-control') }}</td>
+    						<td>{{ article.rct(class_="checkbox-bootstrap form-control") }}</td></div>
     					</tr>
     				</div>
     				{% endfor %}

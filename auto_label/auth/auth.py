@@ -13,7 +13,7 @@ import os
 from auto_label import db
 from auto_label.auth import bp
 from auto_label.models import User
-
+from auto_label.login_required import login_required
 
 
 oauth = OAuth(bp)
@@ -36,6 +36,7 @@ def login():
     return ms_graph.authorize(callback=current_app.config['REDIRECT_URI'], state=session['state'])
 
 @bp.route('/logout')
+#@login_required
 def logout():
     """Clear the current session, including the stored user id."""
     user = User.query.filter_by(email=session['user']['email']).first()
@@ -69,10 +70,24 @@ def authorized():
     user = User.query.filter_by(email=response['mail']).first()
     if user:
         user.authenticated = True
+        if response['displayName'] == os.getenv('ADMIN'):
+            user.role = 2
+        else:
+            user.role = 1
+            
         db.session.add(user)
         db.session.commit()
     else:
-        user = User(email=response['mail'], name=response['displayName'], authenticated = True)
+        user = User(
+                email=response['mail'], 
+                name=response['displayName'], 
+                authenticated = True
+                )
+        if response['displayName'] == os.getenv('ADMIN'):
+            user.role = 2
+        else:
+            user.role = 1
+            
         db.session.add(user)
         db.session.commit()
         user = User.query.filter_by(email=response['mail']).first()

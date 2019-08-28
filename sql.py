@@ -13,9 +13,8 @@ import MySQLdb
 
 def dev_load():
     
-    
     data = pd.read_csv(Path('.', 'data', 'rct_0_0.csv'))
-    print ('Data successfully loaded to database')
+    
     data.dropna(subset=['PMID', 'Abstract', 'NCT_Number'], inplace=True)
     data['PMID'] = data['PMID'].astype('int64')
     #data = data[data['rct_balanced'] == True]
@@ -34,7 +33,7 @@ def dev_load():
     
 
 def prod_load():
-    data = pd.read_csv(Path('.', 'data', 'sample_rct.csv'))
+    data = pd.read_csv(Path('.', 'data', 'sample_rct_0.csv'))
     data['PMID'] = data['PMID'].astype('int64')
     abstr = [{'pmid':content['PMID'], 'abstract':content['Abstract'], 'count':0} for idx, content in data.iterrows()]
     
@@ -55,11 +54,13 @@ def db_table_insert(abstr):
             query = db.insert(abstract)
     
             ResultProxy = conn.execute(query,abstr)
+            print ('Data successfully loaded to database')
             results = conn.execute(db.select([abstract])).fetchall()
     except Exception as e:
         print(f'A fatal error occured. Code: {e}')
     
-    return results
+    else:
+        return results
     
     
 if __name__=='__main__':
@@ -74,7 +75,7 @@ if __name__=='__main__':
         elif load_option.lower() == 'd':
             test_result = dev_load()
         else:
-            print('Please inpur the right deployment platform option')
+            print('Please input the right deployment platform option')
             
     df = pd.DataFrame(test_result)
     df.columns = test_result[0].keys()
