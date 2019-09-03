@@ -7,6 +7,18 @@
     
     <nav aria-label="Page navigation">
     	<ul class="pagination pagination-lg justify-content-center">
+    		{% if prev_df_url %}
+    			<li class="page-item"><a class="page-link" href="{{ prev_df_url }}">Previous df</a></li>
+		    {% endif %}
+
+			{% if next_df_url %}
+				<li class="page-item"><a class="page-link" href="{{ next_df_url }}">Next df</a></li>
+    	    {% endif %}
+   		</ul>
+   	</nav>
+
+    <nav aria-label="Page navigation">
+    	<ul class="pagination pagination-lg justify-content-center">
     		{% if prev_url %}
     			<li class="page-item"><a class="page-link" href="{{ prev_url }}">Previous report</a></li>
 		    {% endif %}
@@ -14,5 +26,7 @@
 			{% if next_url %}
 				<li class="page-item"><a class="page-link" href="{{ next_url }}">Next report</a></li>
     	    {% endif %}
+   		</ul>
+   	</nav>
 
 {% endblock %}

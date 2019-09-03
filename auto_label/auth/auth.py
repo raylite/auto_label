@@ -13,7 +13,6 @@ import os
 from auto_label import db
 from auto_label.auth import bp
 from auto_label.models import User
-from auto_label.login_required import login_required
 
 
 oauth = OAuth(bp)
@@ -40,8 +39,7 @@ def login():
 def logout():
     """Clear the current session, including the stored user id."""
     user = User.query.filter_by(email=session['user']['email']).first()
-    user.authenticated = False
-    db.session.add(user)
+    user.is_authenticated = False
     db.session.commit()
     session.pop('user', None)
     return redirect(url_for('main.index'))
@@ -69,7 +67,7 @@ def authorized():
     'add user to OR load user from db'
     user = User.query.filter_by(email=response['mail']).first()
     if user:
-        user.authenticated = True
+        user.is_authenticated = True
         if response['displayName'] == os.getenv('ADMIN'):
             user.role = 2
         else:
@@ -92,9 +90,9 @@ def authorized():
         db.session.commit()
         user = User.query.filter_by(email=response['mail']).first()
         
-    session['user'] = {'email': user.email, 'name': user.name, 'is_authenticated': user.is_authenticated()}
+    session['user'] = {'email': user.email, 'name': user.name, 'is_authenticated': user.is_authenticated}
     
-    return redirect(url_for('main.label'))
+    return redirect(url_for('main.load'))
 
     
 @ms_graph.tokengetter

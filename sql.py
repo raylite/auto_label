@@ -74,6 +74,7 @@ if __name__=='__main__':
             option = True
         elif load_option.lower() == 'd':
             test_result = dev_load()
+            option = True
         else:
             print('Please input the right deployment platform option')
             

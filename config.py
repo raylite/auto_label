@@ -18,17 +18,20 @@ class Config(object):
     SESSION_REDIS = redis.from_url(os.getenv('REDIS_URI'))
     SESSION_TYPE = os.getenv('SESSION_TYPE')
     SESSION_COOKIE_SECURE = False
+    MAX_LABEL_ROUND_PER_ARTICLE = int(os.getenv('MAX_ROUND'))
+    
+    
+    
     
 class ProductionConfig(Config):
     REDIRECT_URI = os.getenv('PRODUCTION_REDIRECT_URI')
     SESSION_COOKIE_SECURE = True
     
-    
-
 class DevelopmentConfig(Config):
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = os.getenv('INTERCEPT_REDIRECTS')##for debug toolbar
     DEBUG_TB_PROFILER_ENABLED = os.getenv('PROFILER_ENABLED')
+    
 class TestingConfig(Config):
     Testing = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'

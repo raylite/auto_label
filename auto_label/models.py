@@ -8,6 +8,7 @@ Created on Mon Jun 24 17:37:31 2019
 
 from auto_label import db
 from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy.sql import expression
 
 ROLE = {
     'guest': 0,
@@ -19,9 +20,11 @@ class Abstract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pmid = db.Column(db.Integer, index=True, unique=True)
     abstract = db.Column(LONGTEXT())
-    count = db.Column(db.Integer)
-    non_rct = db.Column(db.Boolean, default=False)
+    count = db.Column(db.Integer, default = 0)
     responses = db.relationship('Response', backref = 'root', lazy= 'dynamic')
+    is_locked = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
+    is_clear_to_label = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
+    
     
     def __init__(self, pmid=None, abstract=None, count=None):
         self.data = (pmid, abstract)
@@ -41,7 +44,7 @@ class Removed(db.Model):
 class Psentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean)
+    label = db.Column(db.Boolean, default = True, server_default = expression.true(), nullable=False)
     response_id = db.Column(db.Integer, db.ForeignKey('response.id', ondelete='CASCADE'))
     
     
@@ -51,7 +54,7 @@ class Psentence(db.Model):
 class Pclause(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     clause = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean)
+    label = db.Column(db.Boolean, default = True, server_default = expression.true(), nullable=False)
     response_id = db.Column(db.Integer, db.ForeignKey('response.id', ondelete='CASCADE'))
     #sentence = db.relationship('Psentence', backref='source')
     
@@ -61,7 +64,7 @@ class Pclause(db.Model):
 class Nsentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(LONGTEXT())
-    label = db.Column(db.Boolean)
+    label = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
     response_id = db.Column(db.Integer, db.ForeignKey('response.id', ondelete='CASCADE'))
     
     def __repr__(self):
@@ -93,8 +96,8 @@ class User(db.Model):
     name = db.Column(db.String(100), index = True)
     abstracts = db.relationship('Abstract', secondary='user_abstracts', lazy = 'subquery',
                                backref = db.backref('labellers', lazy = True))
-    authenticated = db.Column(db.Boolean, default = False)
-    admin = db.Column(db.Boolean, default = False)
+    is_authenticated = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
+    is_admin = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
     responses = db.relationship('Response', backref='screener', lazy='dynamic')
     role = db.Column(db.Integer, default = 1)
     
@@ -111,7 +114,7 @@ class User(db.Model):
 
     def is_authenticated(self):
         """Return True if the user is authenticated."""
-        return self.authenticated
+        return self.is_authenticated
 
     def is_anonymous(self):
         """False, as anonymous users aren't supported."""

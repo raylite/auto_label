@@ -37,27 +37,35 @@
     					<th class="ustify-content-center">Abstract</th></div>
     					<th class="col-sm-3 justify-content-center">Sentence</th>
     					<div class="col-sm-2"><th class="justify-content-center">Clause/Phrase</th>
-    					<th class="justify-content-center"> RCT</th></div>
+    					<th class="justify-content-center"> RCT</th>
+    					<th class="justify-content-center"> Clarity</th></div>
     				</tr>
     				{% for article, abst in pub %}
-    				<div class="form-group">
-    					<tr><div class="col-sm-7">
-    						<td>{{ article.number(size=7)}}</td>
-    						<td id="abstract">{% for a in abst.Abstract %} <a class='abstract text-justify' href="">{{ a }}</a>{% endfor %}</td></div>
-    						<td class="col-sm-3">{{ article.sentence(class_='sentence form-control') }}</td>
-    						<div class="col-sm-2"><td>{{ article.clause(class_='clause form-control') }}</td>
-    						<td>{{ article.rct(class_="checkbox-bootstrap form-control") }}</td></div>
-    					</tr>
-    				</div>
+	    				<div class="form-group">
+	    					<tr>
+	    						<div class="col-sm-6">
+	    							<td>{{ article.number(size=7)}}</td>
+	    							<td id="abstract">{% for a in abst.Abstract %} <a class='abstract text-justify' href="">{{ a }}</a>{% endfor %}</td>
+	    						</div>
+	    						<td class="col-sm-3">{{ article.sentence(class_='sentence form-control') }}</td>
+	    						<div class="col-sm-3">
+	    							<td>{{ article.clause(class_='clause form-control') }}</td>
+	    							<td>{{ article.is_rct(class_="checkbox-bootstrap form-control") }}</td>
+	    							<td>{{ wtf.form_field(article.clarity, class_='form-control', button_map={'radio': 'btn-secondary'}) }}</td>
+	    						</div>
+	    					</tr>
+	    				</div>
     				{% endfor %}
     			</table>
     		</div>
-    		<div class="col-sm-1 visible-sm-block"></div>
-    	</div>
+    		</div>
+
+    	<div class="col-sm-1 visible-sm-block"></div>
+    
     	<div class="row">	
     		{{ wtf.quick_form(sub_form, button_map={'submit': 'primary btn-lg'}) }}
     	</div>
-    <!--</form>-->
+    </form>
 	
 
 {% endblock %}

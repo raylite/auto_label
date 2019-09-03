@@ -19,7 +19,7 @@ def login_required(access_level):
             user = User.query.filter_by(email=session['user']['email']).first()
     
             if not user.allowed(access_level):
-                return redirect(url_for('main.label', message="YSorry, you have to be the ADMIN to access the requested page."))
+                return redirect(url_for('main.label', message="Sorry, you have to be the ADMIN to access the requested page."))
             return f(*args, **kwargs)
     
         return decorated_function

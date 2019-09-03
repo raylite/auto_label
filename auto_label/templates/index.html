@@ -5,12 +5,14 @@
     <div class="row">
     	<div class= "col-sm-1"></div>
     	<div class="col-sm-10">
-	        <h2>RCT Abstract Sentences Labelling App</h2>
-	        
-	        <p>
-	            Click on the login button to start using the app
-	        </p>
-	        <p><a role = "button" class="btn btn-success btn-md" href="{{ url_for('auth.login') }} ">Connect</a></p>
+	        <h2>Articles load options</h2>
+	        <form action=" " method="post">
+    			{{ load_article_form.hidden_tag() }}
+    			{{ load_article_form.number.label }}
+    			{{ load_article_form.number }}
+    			{{ load_article_form.submit }}
+    		</form>
+	       
 	     </div>
 	    <div class="col-sm-1"></div>
     </div>

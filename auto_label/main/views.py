@@ -7,40 +7,53 @@ Created on Mon Jun 24 17:37:09 2019
 """
 
 from auto_label import db
-from flask import render_template, url_for, redirect, session, request
+from flask import render_template, url_for, redirect, session, request, current_app
 import pandas as pd
 from nltk import tokenize
 from sqlalchemy.sql.expression import func
 
 from auto_label.main import bp
-from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm, CloseForm
+from auto_label.main.forms import ArticleForm, PublicationsForm, SubmitForm, MoreForm, CloseForm, LoadOptionForm
 from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response, User, Removed
 from auto_label.login_required import login_required
 
-from utilities.paginator import PageResult
-
+from utilities.paginator import PageResult #local class for displaying result in pages
 
 
 
 @bp.route('/')
 @bp.route('/index/')
 def index():
-    return render_template('index.html', title = 'login')
+    return render_template('login.html', title = 'login')
 
 
-@bp.route('/label')
+@bp.route('/load_option/', methods=['GET','POST'])
+@login_required(1)
+def load():
+    load_article_form = LoadOptionForm()
+    if load_article_form.validate_on_submit():
+        session['load_limit'] = load_article_form.number.data
+        return redirect(url_for('main.label'))
+    
+    return render_template('index.html', load_article_form=load_article_form)
+
+
+@bp.route('/label/', methods=['GET','POST'])
 @login_required(1)
 def label():
-    user = User.query.filter_by(email=session['user']['email']).first()
-    user_label_list = [abstract.pmid for abstract in user.abstracts]
+    user = User.query.filter_by(email=session['user']['email']).first() ##user object
+    user_label_list = [abstract.pmid for abstract in user.abstracts]#list of abstracts labelled so far by the user
     
     abstract = pd.read_sql(sql=db.session.query(Abstract).
-                           filter(Abstract.count < 2).
-                           filter(Abstract.pmid.notin_(user_label_list)).
-                           order_by(func.random()).limit(5).
+                           filter(Abstract.count < current_app.config['MAX_LABEL_ROUND_PER_ARTICLE'],
+                                  Abstract.pmid.notin_(user_label_list), Abstract.is_locked == False).
+                           order_by(func.random()).limit(session.get('load_limit', None)).
                            with_entities(Abstract.pmid, Abstract.abstract, Abstract.count).statement, con=db.session.bind)
-    print(abstract.head(5))
+    
    
+    Abstract.query.filter(Abstract.pmid.in_(list(abstract['pmid']))).update({'is_locked': True}, synchronize_session = False)#lock loaded articles until released to prevent race condition in count updating and assignment
+    db.session.commit()
+        
     pub_form = PublicationsForm()
     submit_form = SubmitForm()
     
@@ -63,8 +76,6 @@ def label():
     except:
         db.session.rollback()
     
-    print(pub_form.articles)
-    print(abstracts)
     return render_template('label.html', pub_form = pub_form, pub=zip(pub_form.articles,abstracts), 
                            sub_form = submit_form)
 
@@ -85,19 +96,29 @@ def process():
         neg_sent_list = []
         clause_list = []
         removed = 0
+        clear = 0
+        weak = 0
         
         for idx, form_data in enumerate(pub_form.articles.data):
-            if form_data['rct'] == True and form_data['sentence']:
-                abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
-                abstr.count += 1 #increase the number of times the abtract has been labelled
+            abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
+            if form_data['is_rct'] == True and form_data['sentence']:
+                                
+                if abstr.count + 1 < 2:
+                    abstr.is_locked = False #release the lock
+                abstr.count = abstr.count + 1 #increase the number of times the abtract has been labelled
+                  
                 user.abstracts.append(abstr)#add to users labelled list for many to may relnshp
+                
+                if form_data['clarity'] == 'Clear':
+                    abstr.is_clear_to_label = True
+                    clear += 1
+                elif form_data['clarity'] == 'Weak':
+                    abstr.is_clear_to_label = False
+                    weak += 1
                 
                 neg_sent = tokenize.sent_tokenize(abstr.abstract)
                 neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('\n***')]
-                response = Response(#neg_sentence = '; '.join(neg_sent), 
-                                    #pos_sent = '; '.join(form_data['sentence'].split('\n***')), 
-                                    #clause = '; '.join(form_data['clause'].split('\n***')),
-                                    len_of_neg = len(neg_sent), 
+                response = Response(len_of_neg = len(neg_sent), 
                                     len_of_pos = len(form_data['sentence'].split('\n***')),
                                     len_of_clause = len(form_data['clause'].split('\n***')), 
                                     abstract_id = abstr.id, 
@@ -122,14 +143,16 @@ def process():
                     c = Pclause(clause=s, label = True, source = response)
                     clause_list.append(c) #for display purpose
                 
-                    
-            elif form_data['rct'] == False:
-                abstr = Abstract.query.filter_by(pmid=form_data['number']).first()
+                           
+            elif form_data['is_rct'] == False:
                 rem = Removed(pmid = form_data['number'], abstract = abstr.abstract)
                 removed += 1
                                 
                 db.session.delete(abstr)#remove the non RCTs
                 db.session.add(rem)
+                
+            elif not form_data['sentence'] and form_data['is_rct']:
+                abstr.is_locked = False #release the lock
         try:
             db.session.bulk_save_objects(neg_sent_list)
             db.session.bulk_save_objects(clause_list)
@@ -138,13 +161,15 @@ def process():
             db.session.rollback()
             raise
     
-            
+    
         nsents = {'Item': 'other sentences', 'Count': len(neg_sent_list)}
         psents = {'Item': 'sentences indicating comparison', 'Count': len(pos_sent_list)} #fix its capturing only d last one
         clause = {'Item': 'clause/phrase indicating comparison', 'Count': len(clause_list)}
         non_rcts = {'Item': 'Non_RCTs (deleted)', 'Count': removed}
+        clear = {'Item': 'Marked clear', 'Count': clear}
+        weak = {'Item': 'Marked weak', 'Count': weak}
         
-        summary = pd.DataFrame([psents, nsents, clause, non_rcts])
+        summary = pd.DataFrame([psents, nsents, clause, non_rcts, clear, weak])
         return render_template('process.html', msg = summary.to_html(), more_form = loadmore_form,
                                close_form = close_form)#display temporary stats 
     #elif loadmore_form.validate_on_submit():
@@ -195,6 +220,7 @@ def view_progress():#query the clause, sentences tables to know count
                                'Clause':[c.clause for c in resp.pclauses], 'Screener': resp.screener} 
     for resp in Response.query.all()]).sort_values(by=['Article']).reset_index(drop=True)
     
+   
     out_list = [status_report, articles_count, user_screening,article_screening, responses]
         
     page = request.args.get('page', 0, type=int)
@@ -205,6 +231,8 @@ def view_progress():#query the clause, sentences tables to know count
     prev_url = url_for('main.view_progress', page=results.prev_page()) if results.has_prev() else None
     
     pd.set_option('display.max_colwidth', -1)
+    pd.set_option('large_repr', 'info')
+    pd.set_option('max_seq_items', 10000)#to display all list values
     return render_template('progress.html', report = report.to_html(), next_url=next_url, prev_url=prev_url)
 
 
