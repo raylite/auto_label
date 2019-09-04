@@ -12,7 +12,7 @@ import os
 
 from auto_label import db
 from auto_label.auth import bp
-from auto_label.models import User
+from auto_label.models import User, Abstract
 
 
 oauth = OAuth(bp)
@@ -40,6 +40,10 @@ def logout():
     """Clear the current session, including the stored user id."""
     user = User.query.filter_by(email=session['user']['email']).first()
     user.is_authenticated = False
+    Abstract.query.filter(Abstract.pmid.in_(session.get('pmid_list', None)), 
+                          Abstract.count < current_app.config['MAX_LABEL_ROUND_PER_ARTICLE']).\
+    update({'is_locked': False}, synchronize_session = False)#release any locked articles in case of logging out without labelling
+    
     db.session.commit()
     session.pop('user', None)
     return redirect(url_for('main.index'))

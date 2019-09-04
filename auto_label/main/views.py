@@ -18,6 +18,7 @@ from auto_label.models import Psentence, Nsentence, Pclause, Abstract, Response,
 from auto_label.login_required import login_required
 
 from utilities.paginator import PageResult #local class for displaying result in pages
+from utilities.custom_tokenizer import sentence_tokenizer #local tokenizer
 
 
 
@@ -50,8 +51,8 @@ def label():
                            order_by(func.random()).limit(session.get('load_limit', None)).
                            with_entities(Abstract.pmid, Abstract.abstract, Abstract.count).statement, con=db.session.bind)
     
-   
-    Abstract.query.filter(Abstract.pmid.in_(list(abstract['pmid']))).update({'is_locked': True}, synchronize_session = False)#lock loaded articles until released to prevent race condition in count updating and assignment
+    session['pmid_list'] = list(abstract['pmid'])
+    Abstract.query.filter(Abstract.pmid.in_(session.get('pmid_list', None))).update({'is_locked': True}, synchronize_session = False)#lock loaded articles until released to prevent race condition in count updating and assignment
     db.session.commit()
         
     pub_form = PublicationsForm()
@@ -65,7 +66,7 @@ def label():
     for idx, article in abstract.iterrows():
         art_form = ArticleForm()
         art_form.number = article['pmid']
-        abstracts.append({'Abstract': tokenize.sent_tokenize(article['abstract'])})
+        abstracts.append({'Abstract': sentence_tokenizer(article['abstract'])})
         art_form.sentence = '' 
         art_form.clause = ''
         
