@@ -2,10 +2,19 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <div class="row">
-    	<div class= "col-sm-1"></div>
-    	<div class="col-sm-10">
-	        <h2>Articles load options</h2>
+    <div class= "col-lg-3"></div>
+    <div class="col-lg-6">
+        <div class = "row form-group" id="showExample">
+            
+            <a href = "{{ url_for('example.sample') }}" class="btn btn-primary btn-lg mt-1 font-weight-bold btn-block" role = "button" id = "samplebtn">Try samples</a>
+
+            <button type="button" class="btn btn-primary btn-lg btn-lg btn-success mt-1 font-weight-bold btn-block" id="optionShow" id="appbtn">Go to app</button>
+           
+        </div>
+        <div class="row" id="loadLimitForm">
+    	
+	        <h1>Articles load options</h1>
+            <br>
 	        <form action=" " method="post">
     			{{ load_article_form.hidden_tag() }}
     			{{ load_article_form.number.label }}
@@ -13,8 +22,22 @@
     			{{ load_article_form.submit }}
     		</form>
 	       
-	     </div>
-	    <div class="col-sm-1"></div>
+	   </div>
     </div>
+    <div class="col-lg-3"></div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#loadLimitForm").hide();
+        $("#optionShow").click(function () {
+            $("#loadLimitForm").slideToggle('slow');
+                $(this).fadeOut('slow');
+                $('#showExample').fadeOut('slow')
+            });
+        });
+</script>
 {% endblock %}
 

@@ -9,12 +9,12 @@
     	<div class="col-sm-12">
     		<div class="instruction">
     			<h3>
-	    		List of RCTs for intervention comparison sentence extraction
+	    		Practise with the set of abstracts below, to familiarise with the expectations of labeling in the main app.
 		    	</h3>
 		    	
-		    	<p><strong>Important Note: </strong> Below is a list of 20 RCT studies presented for identification and extraction of sentences that indicates interventions are being compared in each article. The guidelines are as follows:</p>
+		    	<p>The guidelines are as follows:</p>
 		    	<ol>
-		    		<li>Scan each abstract to identify any sentence of interest. Then, click on the sentence(s)</li>
+		    		<li>Read through each abstract to identify any sentence of interest. Then, click on the sentence(s)</li>
 		    		<li>The sentence(s) automatically appears to the right of the abstract. If there occurs a <strong>mistake</strong>, double click the corresponding sentence column to the right of the abstract to change your choice.</li>
 		    		<li>In the extracted sentence, highlight any clause or phrase(s) that actually signals the comparison.</li>
 		    		<li>Uncheck the RCT column box for any study you presume not to be a RCT.</li>
@@ -26,7 +26,7 @@
     </div>
 
     
-    <form action="{{ url_for('main.process') }}" method="post">
+    <form action="{{ url_for('example.assess') }}" method="post">
     	{{ pub_form.hidden_tag() }}
   		<div class="row">
   			<div class="col-sm-1 visible-sm-block"></div>
@@ -72,7 +72,7 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript"> 
+<script>
 	
     $(".abstract").click(function (e) {
     	e.preventDefault();

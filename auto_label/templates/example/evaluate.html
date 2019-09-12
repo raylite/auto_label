@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-sm-1"> </div>
+        <div class="col-sm-10">
+            <h3>
+                Process Summary
+            </h3>
+            <p> View in the table below, your responses and the expected responses. When you are comfortable, click <a href="{{ url_for('main.load') }}">here</a> to proceed to live labeling. Otherwise, click <a href="{{ url_for('example.sample') }}">here</a> to try another sample.</p>
+        </div>
+        <div class="col-sm-1"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-1"> </div>
+        <div class="col-sm-10">
+            {{ msg | safe }}
+        </div>
+        <div class="col-sm-1"> </div>        
+    </div>
+    <div class="row">
+        <div class="col-sm-1"> </div>
+        <div class="col-sm-10">
+            <p class="lead">Click a button below.</p>
+        </div>
+        <div class="col-sm-1"> </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            {{ more_form.hidden_tag() }}
+            <form action="{{ url_for('example.sample') }}" method="post" class="process">
+                {% if more_form %}
+                
+                {{ wtf.quick_form(more_form, button_map={'subandloadmore': 'block btn-primary btn-lg mb-1 font-weight-bold'}) }}
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-sm-1"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10">
+            {{ close_form.hidden_tag() }}
+            <form action="{{ url_for('example.terminate') }}" method="post" class="process">
+                {% if close_form %}
+                
+                {{ wtf.quick_form(close_form, button_map={'submit': 'block btn-lg btn-success mt-1 font-weight-bold'}) }}
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-sm-1"></div>
+    </div>
+  
+{% endblock %}

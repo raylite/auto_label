@@ -1,6 +1,7 @@
 import os#, binascii
 from dotenv import load_dotenv
 import redis
+from pathlib import Path
 
 APP_ROOT = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(APP_ROOT, '.env'))
@@ -13,7 +14,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_MAX_OVERFLOW = int(os.getenv('MAX_OVERFLOW'))
     MYSQL_DATABASE_CHARSET = 'utf8mb4'
-    DATA_FOLDER = os.path.join(APP_ROOT, 'data')
+    DATA_DIR = Path(APP_ROOT, os.getenv('DATA_PATH'))
     REDIRECT_URI = os.getenv('REDIRECT_URI')
     SESSION_REDIS = redis.from_url(os.getenv('REDIS_URI'))
     SESSION_TYPE = os.getenv('SESSION_TYPE')

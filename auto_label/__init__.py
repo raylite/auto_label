@@ -43,6 +43,9 @@ def create_app(config_class = Config):
     from auto_label.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
     
+    from auto_label.example import bp as example_bp
+    app.register_blueprint(example_bp, url_prefix='/sample')
+    
     
     if not app.debug:
         if not os.path.exists('logs'):

@@ -13,7 +13,6 @@ from wtforms.widgets import TextArea
 
 class ArticleForm(FlaskForm):
     number = IntegerField('number', render_kw={'readonly': True})
-    #abstract = HiddenField('Abstract')#, render_kw={'readonly': True})
     sentence = StringField('Sentence', widget=TextArea(), render_kw={'readonly': True})
     clause = StringField('Clause', widget=TextArea(), render_kw={'readonly': True})
     is_rct = BooleanField('RCT', false_values=('False', '', None))
@@ -24,17 +23,13 @@ class PublicationsForm(FlaskForm):
     articles = FieldList(FormField(ArticleForm))#
     
 class SubmitForm(FlaskForm):
-    submit = SubmitField('Click to save responses')
+    submit = SubmitField('Submit responses')
     
 class MoreForm(FlaskForm):
-    subandloadmore = SubmitField('Click to load more')
+    subandloadmore = SubmitField('Try again')
     
 class CloseForm(FlaskForm):
     submit = SubmitField('End process')
     
-class LoadOptionForm(FlaskForm):
-    number = IntegerField('Enter number of articles to load for this round', render_kw={'readonly': False})
-    submit = SubmitField('Load articles')
-    
-    
+
     

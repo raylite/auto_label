@@ -9,7 +9,6 @@ Created on Mon Jun 24 17:37:09 2019
 from auto_label import db
 from flask import render_template, url_for, redirect, session, request, current_app
 import pandas as pd
-from nltk import tokenize
 from sqlalchemy.sql.expression import func
 
 from auto_label.main import bp
@@ -117,7 +116,7 @@ def process():
                     abstr.is_clear_to_label = False
                     weak += 1
                 
-                neg_sent = tokenize.sent_tokenize(abstr.abstract)
+                neg_sent = sentence_tokenizer(abstr.abstract)
                 neg_sent = [s for s in neg_sent if s not in form_data['sentence'].split('\n***')]
                 response = Response(len_of_neg = len(neg_sent), 
                                     len_of_pos = len(form_data['sentence'].split('\n***')),
@@ -173,7 +172,7 @@ def process():
         summary = pd.DataFrame([psents, nsents, clause, non_rcts, clear, weak])
         return render_template('process.html', msg = summary.to_html(), more_form = loadmore_form,
                                close_form = close_form)#display temporary stats 
-    #elif loadmore_form.validate_on_submit():
+
         
     
 
@@ -216,9 +215,9 @@ def view_progress():#query the clause, sentences tables to know count
     articles_count = pd.DataFrame([{'Article': abstract.pmid, 'Count': abstract.count} for abstract in Abstract.query.all()])
     user_screening = pd.DataFrame([{'User': user.name, 'Total screening': len(user.abstracts), 'PMIDs': [abstract.pmid for abstract in user.abstracts],} for user in User.query.all()])
     article_screening = pd.DataFrame([{'Article': abstract.pmid, "Screeners\' Id": [user.name for user in abstract.labellers]} for abstract in Abstract.query.all()])
-    responses = pd.DataFrame([{'Article': resp.root.pmid, 'Positive': [s.sentence for s in resp.psentences], \
-                               'Negative': [s.sentence for s in resp.nsentences], \
-                               'Clause':[c.clause for c in resp.pclauses], 'Screener': resp.screener} 
+    responses = pd.DataFrame([{'Article': resp.root.pmid, 'Positive': ['.\n'.join(s.sentence) for s in resp.psentences], \
+                               'Negative': ['.\n'.join(s.sentence) for s in resp.nsentences], \
+                               'Clause':['.\n'.join(c.clause) for c in resp.pclauses], 'Screener': resp.screener} 
     for resp in Response.query.all()]).sort_values(by=['Article']).reset_index(drop=True)
     
    
