@@ -1,0 +1,87 @@
+body            { 
+	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	max-width: 90%;
+	margin: auto;
+}
+h1, h2       { color: #377ba8; }
+h1, h2          { margin: 0; }
+h1              { border-bottom: 2px solid #eee; }
+h2              { font-size: 1.2em; }
+
+
+table.dataframe, .dataframe th, .dataframe td {
+  padding: 5px;
+  margin-bottom: 40px;
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+
+table.dataframe{
+	margin: 10px;
+	overflow-y: auto;
+	overflow-x: auto;
+}
+
+tr:nth-child(odd)		{ background-color:#eee; }
+tr:nth-child(even)	{ background-color:#fff; }
+
+tr:hover            { background-color: #ffff99;}
+
+
+.container-fluid{
+  margin: auto;
+}
+
+.d-flex: {
+  height:100px;
+}
+
+textarea {
+    margin: 0;
+    border-radius: 0;
+    color: #444; /* or whatever */
+    background-color: transparent;
+}
+
+a{
+  outline: none;
+  text-decoration: none;
+}
+
+a:link{
+  color: black;
+}
+/* visited link */
+a:visited {
+  color: black;
+}
+
+a:focus {
+  border-bottom: 1px solid;
+  background: #BAE498;
+}
+
+/* mouse over link */
+a:hover 
+a.sent {
+  border-bottom: 1px solid;     
+  background: #CDFEAA;
+
+/* selected link */
+a:active 
+a.sent {
+  background: #265301;
+  color: blue;
+}
+
+td {
+  vertical-align: middle;
+}
+
+.process {
+  display: inline;
+  float: left;
+  margin: 0 auto;
+  padding: 2px;
+}

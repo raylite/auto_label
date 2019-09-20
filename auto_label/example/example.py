@@ -71,30 +71,33 @@ def assess():
     if submit_form.validate_on_submit():
         
         response = pd.read_csv(session.get('sample_file'), dtype=object)
-        print (response)
         
         for idx, form_data in enumerate(pub_form.articles.data):
             
             if form_data['is_rct'] == True and form_data['sentence']:
                 
                 if form_data['clarity'] == 'Clear':
-                    response.at[idx, 'response_clarity'] = 1
+                    response.at[idx, 'response_clarity'] = 'clear'
                 elif form_data['clarity'] == 'Weak':
-                    response.at[idx, 'response_clarity'] = 0
+                    response.at[idx, 'response_clarity'] = 'weak'
                 
-                response.at[idx, 'response_sentences'] = form_data['sentence']#.split('\n***')
-                response.at[idx, 'response_clauses'] = form_data['clause']#.split('\n***')
+                response.at[idx, 'response_sentences'] = ''.join(form_data['sentence'].split('\n***'))
+                response.at[idx, 'response_clauses'] = ''.join(form_data['clause'].split('\n***'))
                 response.at[idx, 'response_RCT'] = True
-                
+                #response.at[idx, 'oracle_sentences'] = response.at[idx, 'oracle_sentences'].split('\n')
+                #response.at[idx, 'oracle_clauses'] = response.at[idx, 'oracle_clauses'].split('\n')
                            
             elif form_data['is_rct'] == False:
                 response.at[idx, 'response_rct'] = False
-    
+                
+        #response = response.replace(to_replace= r'\r|\\n', value=r'<br />', regex=True)
+            
+            
         pd.set_option('display.max_colwidth', -1)
         pd.set_option('large_repr', 'info')
         pd.set_option('max_seq_items', 10000)#to display all list values
-        return render_template('example/evaluate.html', msg = response.to_html(), more_form = loadmore_form,
-                               close_form = close_form)#display temporary stats 
+        return render_template('example/evaluate.html', msg = (response.to_html().replace(r'\n', '<hr />')).replace(r'\r', '<hr/>'),
+                              more_form = loadmore_form, close_form = close_form) #display temporary stats 
         
     
 @bp.route('/terminate/', methods=['GET','POST'])

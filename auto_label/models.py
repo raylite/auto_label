@@ -94,7 +94,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), index = True, unique = True)
     name = db.Column(db.String(100), index = True)
-    abstracts = db.relationship('Abstract', secondary='user_abstracts', lazy = 'subquery',
+    abstracts = db.relationship('Abstract', secondary='user_abstracts', lazy = 'dynamic',
                                backref = db.backref('labellers', lazy = True))
     is_authenticated = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
     is_admin = db.Column(db.Boolean, default = False, server_default = expression.false(), nullable=False)
@@ -129,8 +129,8 @@ class User(db.Model):
 
     
 user_abstracts = db.Table('user_abstracts',
-                          db.Column('user.id', db.Integer, db.ForeignKey('user.id'), primary_key = True),
-                          db.Column('abstract.id', db.Integer, db.ForeignKey('abstract.id'), primary_key = True))
+                          db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key = True),
+                          db.Column('abstract_id', db.Integer, db.ForeignKey('abstract.id'), primary_key = True))
     
 
     

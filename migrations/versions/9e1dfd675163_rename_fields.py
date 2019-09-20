@@ -1,8 +1,8 @@
-"""boolean fields renamed
+"""rename fields
 
-Revision ID: 0fe533e200df
+Revision ID: 9e1dfd675163
 Revises: 
-Create Date: 2019-09-03 16:37:31.515665
+Create Date: 2019-09-13 12:21:45.264238
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '0fe533e200df'
+revision = '9e1dfd675163'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -55,11 +55,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user_abstracts',
-    sa.Column('user.id', sa.Integer(), nullable=False),
-    sa.Column('abstract.id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['abstract.id'], ['abstract.id'], ),
-    sa.ForeignKeyConstraint(['user.id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('user.id', 'abstract.id')
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('abstract_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['abstract_id'], ['abstract.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('user_id', 'abstract_id')
     )
     op.create_table('nsentence',
     sa.Column('id', sa.Integer(), nullable=False),

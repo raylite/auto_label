@@ -40,9 +40,10 @@ def logout():
     """Clear the current session, including the stored user id."""
     user = User.query.filter_by(email=session['user']['email']).first()
     user.is_authenticated = False
-    Abstract.query.filter(Abstract.pmid.in_(session.get('pmid_list', None)), 
+    if session.get('pmid_list'):
+        Abstract.query.filter(Abstract.pmid.in_(session.get('pmid_list')), 
                           Abstract.count < current_app.config['MAX_LABEL_ROUND_PER_ARTICLE']).\
-    update({'is_locked': False}, synchronize_session = False)#release any locked articles in case of logging out without labelling
+                          update({'is_locked': False}, synchronize_session = False)#release any locked articles in case of logging out without labelling
     
     db.session.commit()
     session.pop('user', None)
@@ -83,7 +84,7 @@ def authorized():
         user = User(
                 email=response['mail'], 
                 name=response['displayName'], 
-                authenticated = True
+                is_authenticated = True
                 )
         if response['displayName'] == os.getenv('ADMIN'):
             user.role = 2
